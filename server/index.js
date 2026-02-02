@@ -1,44 +1,105 @@
+require("dotenv").config();
 const express = require("express");
-const cors = require("cors");
+const multer = require("multer");
 const pdfParse = require("pdf-parse");
+const cors = require("cors");
+const { parse } = require("dotenv");
 
-const multer  = require('multer');
+const app = express();
+const port = 3000;
+
+app.use(cors());
+app.use(express.json());
+
+// ---------- MULTER SETUP ----------
 const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
-const upload = multer({
-    storage : storage
+async function callGemini(prompt) {
+  const url =
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=" +
+    process.env.GEMINI_API_KEY;
+
+  const body = {
+    contents: [
+      {
+        role: "user",
+        parts: [{ text: prompt }],
+      },
+    ],
+  };
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  const data = await response.json();
+
+const rawText = data.candidates[0].content.parts[0].text;
+
+// sirf { ... } part uthao
+const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+
+if (!jsonMatch) {
+  throw new Error("No JSON found in Gemini response");
+}
+
+const parsed = JSON.parse(jsonMatch[0]);
+
+return parsed;
+
+}
+
+// ---------- TEST ROUTES ----------
+app.get("/", (req, res) => {
+  res.json({ message: "Home Page" });
 });
 
-const app = express()
-const port = 3000
+app.get("/test", (req, res) => {
+  res.json({ message: "Test Page" });
+});
 
-app.get('/', (req,res)=>{
-    return res.status(200).json({"message" : "Home Page"})
-})
+// ---------- UPLOAD ROUTE ----------
+app.post("/upload", upload.single("resume"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
 
-app.get('/test', (req, res)=>{
-    return res. status(200).json({"message" : "Test Page"})
-})
+    // 1. Extract text from PDF
+    const pdfData = await pdfParse(req.file.buffer);
+    const resumeText = pdfData.text;
 
-app.post('/upload', 
-    upload.single("resume"),
-    async (req, res)=>{
-        try{
-            if(!req.file){
-                return res.status(400).json({
-                    error : "NO file uploaded"
-                })
-            }
-            const data = await pdfParse(req.file.buffer)
-            res.status(200).json({ text : data.text})
-        }catch(err){
-            console.log(err)
-            return res.status(400).json({
-                error : err})
-        }
-})
+    // 2. Create prompt
+    const prompt = `
+This is a resume:
+${resumeText}
 
+Analyze this resume and return ONLY JSON in this format:
+{
+  "match_percentage": "",
+  "missing_skills": [],
+  "improvement_tips": []
+}
+`;
 
-app.listen(port, ()=>{
-    console.log(`Server is running on port ${port}`)
-})
+    // 3. Call Gemini
+    const analysis = await callGemini(prompt);
+    console.log("data of gemini : ",analysis)
+    // 4. Send response
+    res.send(analysis)
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      error: "Something went wrong",
+      details: err.message,
+    });
+  }
+});
+
+// ---------- START SERVER ----------
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
