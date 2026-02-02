@@ -10,6 +10,7 @@ const port = 3000;
 
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({extended : true}))
 
 // ---------- MULTER SETUP ----------
 const storage = multer.memoryStorage();
@@ -71,13 +72,17 @@ app.post("/upload", upload.single("resume"), async (req, res) => {
     // 1. Extract text from PDF
     const pdfData = await pdfParse(req.file.buffer);
     const resumeText = pdfData.text;
+    const jobDescription = req.body.jobDescription;
+
 
     // 2. Create prompt
     const prompt = `
 This is a resume:
 ${resumeText}
+This is a resume:
+${jobDescription}
 
-Analyze this resume and return ONLY JSON in this format:
+Compare the resume with the job description and return ONLY JSON in this format:
 {
   "match_percentage": "",
   "missing_skills": [],
