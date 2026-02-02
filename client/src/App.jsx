@@ -36,12 +36,27 @@ function App() {
         </h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="file"
-            accept="application/pdf"
-            onChange={(e) => setFile(e.target.files[0])}
-            className="block w-full border border-gray-300 rounded-lg p-2"
-          />
+
+          <div className="border-2 border-dashed border-indigo-400 rounded-lg p-6 text-center cursor-pointer hover:bg-indigo-50 transition">
+            <input
+              type="file"
+              accept="application/pdf"
+              id="resumeUpload"
+              className="hidden"
+              onChange={(e) => setFile(e.target.files[0])}
+            />
+            <label htmlFor="resumeUpload" className="cursor-pointer">
+              {file ? (
+                <p className="text-green-600 font-semibold">
+                  Selected: {file.name}
+                </p>
+              ) : (
+                <p className="text-gray-600">
+                  📄 Drag & drop your resume here, or <span className="text-indigo-600 underline">browse</span>
+                </p>
+              )}
+            </label>
+          </div>
 
           <textarea
             placeholder="Paste Job Description here..."
@@ -69,11 +84,19 @@ function App() {
 
         {result && (
           <div className="mt-6 space-y-4">
+            <p className="text-sm text-gray-500">
+              Compared with given Job Description
+            </p>
             <div className="bg-green-100 p-4 rounded-lg">
-              <p className="text-sm text-gray-500">
-                Compared with given Job Description
-              </p>
-              <p className="text-lg font-semibold">
+
+              <div className="w-full bg-gray-200 rounded-full h-4">
+                <div
+                  className="bg-green-500 h-4 rounded-full"
+                  style={{ width: result.match_percentage }}
+                ></div>
+              </div>
+
+              <p className="mt-3 text-lg font-semibold">
                 Match Percentage:{" "}
                 <span className="text-green-700">
                   {result.match_percentage}
