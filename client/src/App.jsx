@@ -4,6 +4,8 @@ function App() {
   const [file, setFile] = useState(null);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [jobDesc, setJobDesc] = useState("");
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -11,8 +13,10 @@ function App() {
 
     const formData = new FormData();
     formData.append("resume", file);
+    formData.append("jobDescription", jobDesc);
 
     setLoading(true);
+    setResult(null);
 
     const res = await fetch("http://localhost:3000/upload", {
       method: "POST",
@@ -21,48 +25,80 @@ function App() {
 
     const data = await res.json();
     setResult(data);
-    console.log(data)
     setLoading(false);
   };
 
-
   return (
-    <div style={{ padding: "40px" }}>
-      <h1>AI Resume Analyzer</h1>
+    <div className="min-h-screen bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center p-6">
+      <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-2xl">
+        <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">
+          AI Resume Analyzer 🤖
+        </h1>
 
-      <form onSubmit={handleSubmit}>
-        <input
-          type="file"
-          accept="application/pdf"
-          onChange={(e) => setFile(e.target.files[0])}
-        />
-        <br /><br />
-        <button type="submit">Analyze Resume</button>
-      </form>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="file"
+            accept="application/pdf"
+            onChange={(e) => setFile(e.target.files[0])}
+            className="block w-full border border-gray-300 rounded-lg p-2"
+          />
 
-      {loading && <p>Analyzing...</p>}
+          <textarea
+            placeholder="Paste Job Description here..."
+            value={jobDesc}
+            onChange={(e) => setJobDesc(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg p-2"
+            rows={6}
+          />
 
-{result && (
-  <div>
-    <h2>Result</h2>
-    <p><b>Match %:</b> {result.match_percentage}</p>
 
-    <h3>Missing Skills</h3>
-    <ul>
-      {result.missing_skills && result.missing_skills.map((s, i) => (
-        <li key={i}>{s}</li>
-      ))}
-    </ul>
+          <button
+            type="submit"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg transition"
+          >
+            Analyze Resume
+          </button>
+        </form>
 
-    <h3>Improvement Tips</h3>
-    <ul>
-      {result.improvement_tips && result.improvement_tips.map((t, i) => (
-        <li key={i}>{t}</li>
-      ))}
-    </ul>
-  </div>
-)}
+        {loading && (
+          <p className="text-center text-indigo-600 mt-4 animate-pulse">
+            Analyzing your resume...
+          </p>
+        )}
 
+        {result && (
+          <div className="mt-6 space-y-4">
+            <div className="bg-green-100 p-4 rounded-lg">
+              <p className="text-lg font-semibold">
+                Match Percentage:{" "}
+                <span className="text-green-700">
+                  {result.match_percentage}
+                </span>
+              </p>
+            </div>
+
+            <div className="bg-yellow-100 p-4 rounded-lg">
+              <h3 className="font-semibold mb-2">Missing Skills</h3>
+              <ul className="list-disc list-inside">
+                {result.missing_skills &&
+                  result.missing_skills.map((skill, i) => (
+                    <li key={i}>{skill}</li>
+                  ))}
+              </ul>
+            </div>
+
+            <div className="bg-blue-100 p-4 rounded-lg">
+              <h3 className="font-semibold mb-2">Improvement Tips</h3>
+              <ul className="list-disc list-inside">
+                {result.improvement_tips &&
+                  result.improvement_tips.map((tip, i) => (
+                    <li key={i}>{tip}</li>
+                  ))}
+              </ul>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
