@@ -66,9 +66,13 @@ function App() {
           </p>
         )}
 
+
         {result && (
           <div className="mt-6 space-y-4">
             <div className="bg-green-100 p-4 rounded-lg">
+              <p className="text-sm text-gray-500">
+                Compared with given Job Description
+              </p>
               <p className="text-lg font-semibold">
                 Match Percentage:{" "}
                 <span className="text-green-700">
