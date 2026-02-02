@@ -7,6 +7,7 @@ const { parse } = require("dotenv");
 
 const app = express();
 const port = 3000;
+let history = [];
 
 app.use(cors());
 app.use(express.json());
@@ -91,10 +92,20 @@ Compare the resume with the job description and return ONLY JSON in this format:
 `;
 
     // 3. Call Gemini
-    const analysis = await callGemini(prompt);
+    const finalResult = await callGemini(prompt);
 
     // 4. Send response
-    res.send(analysis)
+
+    history.push({
+    id: Date.now(),
+    match_percentage: finalResult.match_percentage,
+    missing_skills: finalResult.missing_skills,
+    improvement_tips: finalResult.improvement_tips,
+    createdAt: new Date()
+    });
+
+    res.json(finalResult);
+    // res.send(analysis)
   } catch (err) {
     console.error(err);
     res.status(500).json({
@@ -103,6 +114,10 @@ Compare the resume with the job description and return ONLY JSON in this format:
     });
   }
 });
+
+app.get('/history', (req, res)=> {
+    res.json(history);
+})
 
 // ---------- START SERVER ----------
 app.listen(port, () => {
