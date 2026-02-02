@@ -92,7 +92,7 @@ Compare the resume with the job description and return ONLY JSON in this format:
 
     // 3. Call Gemini
     const analysis = await callGemini(prompt);
-    console.log("data of gemini : ",analysis)
+
     // 4. Send response
     res.send(analysis)
   } catch (err) {
