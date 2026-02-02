@@ -1,8 +1,9 @@
 const express = require("express");
 const cors = require("cors");
+const pdfParse = require("pdf-parse");
+
 const multer  = require('multer');
 const storage = multer.memoryStorage();
-const pdfParser = require("pdf-parser")
 
 const upload = multer({
     storage : storage
@@ -28,12 +29,12 @@ app.post('/upload',
                     error : "NO file uploaded"
                 })
             }
-            const data = await pdfParser(req.file.buffer)
-            console.log(data.text);
+            const data = await pdfParse(req.file.buffer)
             res.status(200).json({ text : data.text})
         }catch(err){
+            console.log(err)
             return res.status(400).json({
-                error : "Failed to parse PDF"})
+                error : err})
         }
 })
 
