@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function App() {
   const [file, setFile] = useState(null);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [jobDesc, setJobDesc] = useState("");
+  const [history, setHistory] = useState([])
 
 
   const handleSubmit = async (e) => {
@@ -22,12 +23,21 @@ function App() {
       method: "POST",
       body: formData,
     });
-
+    
     const data = await res.json();
     setResult(data);
     setLoading(false);
   };
+  
+  useEffect(() => {
+    fetchHistory()
+  }, []);
 
+  const fetchHistory = async () => {
+    const res = await fetch("http://localhost:3000/history")
+    const data = await res.json();
+    setHistory(data);
+  }
   return (
     <div className="min-h-screen bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center p-6">
       <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-2xl">
@@ -123,6 +133,21 @@ function App() {
                   ))}
               </ul>
             </div>
+          </div>
+        )}
+
+        {history.length > 0 && (
+          <div className="mt-8">
+            <h2 className="text-xl font-bold mb-3">Previous Analyses</h2>
+
+            {history.map((item) => (
+              <div key={item.id} className="border p-3 rounded mb-3 bg-gray-50">
+                <p><b>Match:</b> {item.match_percentage}</p>
+                <p className="text-sm text-gray-500">
+                  {new Date(item.createdAt).toLocaleString()}
+                </p>
+              </div>
+            ))}
           </div>
         )}
       </div>
