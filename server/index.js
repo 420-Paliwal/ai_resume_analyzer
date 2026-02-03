@@ -9,7 +9,12 @@ const app = express();
 const port = 3000;
 let history = [];
 
-app.use(cors());
+app.use(cors({
+  origin : "https://ai-resume-analyzer-six-lyart.vercel.app",
+  methods: ["GET", "POST"],
+  credentials: true,
+}
+));
 app.use(express.json());
 app.use(express.urlencoded({extended : true}))
 

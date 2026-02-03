@@ -19,7 +19,7 @@ function App() {
     setLoading(true);
     setResult(null);
 
-    const res = await fetch("http://localhost:3000/upload", {
+    const res = await fetch("https://ai-resume-analyzer-gcky.onrender.com/upload", {
       method: "POST",
       body: formData,
     });
@@ -34,7 +34,7 @@ function App() {
   }, []);
 
   const fetchHistory = async () => {
-    const res = await fetch("http://localhost:3000/history")
+    const res = await fetch("https://ai-resume-analyzer-gcky.onrender.com/history")
     const data = await res.json();
     setHistory(data);
   }
