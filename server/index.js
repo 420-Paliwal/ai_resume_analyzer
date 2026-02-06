@@ -1,4 +1,5 @@
 require("dotenv").config();
+const path = require('path');
 const express = require("express");
 const multer = require("multer");
 const pdfParse = require("pdf-parse");
@@ -8,6 +9,9 @@ const { parse } = require("dotenv");
 const app = express();
 const port = 3000;
 let history = [];
+
+app.set("view engine", "ejs");
+app.set("view", path.join(__dirname, "views"));
 
 app.use(cors({
   origin : "https://ai-resume-analyzer-six-lyart.vercel.app",
