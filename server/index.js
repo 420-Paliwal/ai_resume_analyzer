@@ -1,5 +1,4 @@
 require("dotenv").config();
-const path = require('path');
 const express = require("express");
 const multer = require("multer");
 const pdfParse = require("pdf-parse");
@@ -10,11 +9,8 @@ const app = express();
 const port = 3000;
 let history = [];
 
-app.set("view engine", "ejs");
-app.set("view", path.join(__dirname, "views"));
-
 app.use(cors({
-  origin : "https://ai-resume-analyzer-six-lyart.vercel.app",
+  origin : ["https://ai-resume-analyzer-six-lyart.vercel.app", "http://localhost:5173/"],
   methods: ["GET", "POST"],
   credentials: true,
 }
@@ -73,7 +69,14 @@ app.get("/test", (req, res) => {
 });
 
 // ---------- UPLOAD ROUTE ----------
-app.post("/upload", upload.single("resume"), async (req, res) => {
+app.post("/upload",
+  (req, res)=> {
+    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+    if(!GEMINI_API_KEY){
+      return res.status(404)
+    }
+  }
+    ,upload.single("resume"), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
